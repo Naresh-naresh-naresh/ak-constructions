@@ -1,0 +1,29 @@
+AK Constructions — Photo upload checklist (Phase 1)
+====================================================
+
+WHEN CLIENT SENDS PHOTOS ON WHATSAPP:
+1. Save each photo to this folder (public/images/gallery/)
+2. Rename using the filenames below (exact names)
+3. Optionally edit titles in src/content/projects.ts
+4. Run: npm run dev  →  check localhost:3000
+5. Deploy when happy
+
+REQUIRED FILES (9 photos):
+  kitchen.jpg        → Main gallery (large tile)
+  living-room.jpg    → Gallery
+  home-office.jpg    → Gallery
+  bedroom.jpg        → Gallery
+  full-home.jpg      → Gallery
+  hero-1.jpg         → Homepage hero (top-left)
+  hero-2.jpg         → Homepage hero (bottom-left)
+  hero-3.jpg         → Homepage hero (top-right)
+  hero-4.jpg         → Homepage hero (bottom-right)
+
+TIPS:
+  - Ask client for: kitchen, bedroom, living room, wardrobe, full home shots
+  - Compress at https://squoosh.app if file is over 500 KB
+  - Use JPG or WebP, minimum 1200px wide
+  - Same photo can be reused for hero + gallery if client sends few images
+
+UNTIL PHOTOS ARE ADDED:
+  Site shows a soft placeholder gradient — no broken images.
