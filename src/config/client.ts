@@ -6,9 +6,9 @@ export const clientConfig = {
   ratePerSqFt: 1899,
   currency: "INR",
   currencySymbol: "₹",
-  phone: "+91 98765 43210",
-  whatsapp: "919876543210",
-  email: "info@akconstructions.in",
+  phone: "+91 63834 34544",
+  whatsapp: "916383434544",
+  email: "nareshdev03@gmail.com",
   city: "Your City",
   serviceAreas: ["City Center", "North Zone", "South Zone", "East Zone"],
   social: {
