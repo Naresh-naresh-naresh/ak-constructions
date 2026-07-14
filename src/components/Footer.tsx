@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { clientConfig } from "@/config/client";
 
 export default function Footer() {
@@ -33,6 +34,11 @@ export default function Footer() {
               </a>
             </li>
             <li>{clientConfig.city}</li>
+            <li>
+              <Link href="/track" className="font-medium hover:text-orange-600">
+                Track My Project →
+              </Link>
+            </li>
           </ul>
         </div>
 
