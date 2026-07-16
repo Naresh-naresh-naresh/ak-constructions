@@ -1,9 +1,13 @@
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import {
+  getAdminPasswordHash,
+  getAdminUsername,
+} from "@/lib/admin-credentials";
 
 export const authOptions: AuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env["NEXTAUTH_SECRET"],
   session: { strategy: "jwt" },
   pages: { signIn: "/admin/login" },
   providers: [
@@ -16,12 +20,12 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         // .trim() guards against a stray leading/trailing space or newline
         // picked up when pasting these values into the Amplify Console.
-        const adminUsername = process.env.ADMIN_USERNAME?.trim();
-        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH?.trim();
+        const adminUsername = getAdminUsername();
+        const adminPasswordHash = getAdminPasswordHash();
 
         if (!adminUsername || !adminPasswordHash) {
           throw new Error(
-            "Admin login is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD_HASH."
+            "Admin login is not configured. Set ADMIN_USERNAME and ADMIN_PASSWORD_HASH_B64 (or ADMIN_PASSWORD_HASH)."
           );
         }
 
