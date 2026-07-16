@@ -80,7 +80,8 @@ plain password).
 ## 4. Set environment variables
 
 Copy `.env.local.example` to `.env.local` for local dev, and add the same keys in
-**Amplify Console → your app → Hosting → Environment variables** for production:
+**Amplify Console → your app → Hosting → Environment variables** for production
+(Secrets alone are not enough — see note below):
 
 | Variable | Value |
 |---|---|
@@ -92,6 +93,13 @@ Copy `.env.local.example` to `.env.local` for local dev, and add the same keys i
 | `NEXTAUTH_SECRET` | any random 32+ char string, e.g. `openssl rand -base64 32` |
 | `ADMIN_USERNAME` | the username you picked |
 | `ADMIN_PASSWORD_HASH` | the hash from step 3 |
+
+> **Build-time vs runtime:** Amplify **Secrets** are injected into the SSR Lambda
+> at request time, but Next.js reads server env vars during `npm run build`. If
+> `NEXTAUTH_SECRET` exists only as a Secret, `/api/debug-env` can show
+> `present: true` while NextAuth still throws `[MissingSecretError]`. Set these
+> keys under **Environment variables** (or both), and keep the `amplify.yml`
+> step that writes them to `.env.production` before the build.
 
 > **Why `DYNAMODB_*` and not `AWS_*`?** AWS Amplify Hosting's console
 > rejects any environment variable starting with `AWS_` — that prefix is
