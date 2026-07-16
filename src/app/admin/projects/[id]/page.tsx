@@ -14,6 +14,7 @@ export default function AdminProjectDetailPage() {
   const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [newStageLabel, setNewStageLabel] = useState("");
 
   useEffect(() => {
     fetch(`/api/admin/projects/${params.id}`)
@@ -66,6 +67,24 @@ export default function AdminProjectDetailPage() {
     save({ stages, status: project.status, notes: project.notes });
   };
 
+  const addStage = () => {
+    if (!project || !newStageLabel.trim()) return;
+    const stages = [
+      ...project.stages,
+      { key: crypto.randomUUID(), label: newStageLabel.trim(), completed: false },
+    ];
+    setProject({ ...project, stages });
+    setNewStageLabel("");
+    save({ stages, status: project.status, notes: project.notes });
+  };
+
+  const deleteStage = (key: string) => {
+    if (!project) return;
+    const stages = project.stages.filter((stage) => stage.key !== key);
+    setProject({ ...project, stages });
+    save({ stages, status: project.status, notes: project.notes });
+  };
+
   const changeStatus = (status: ProjectStatus) => {
     if (!project) return;
     setProject({ ...project, status });
@@ -91,6 +110,13 @@ export default function AdminProjectDetailPage() {
           <p className="mt-0.5 text-xs text-stone-400">
             Tracker phone: {project.phone} · Started {project.startedOn}
           </p>
+          <p className="mt-0.5 text-xs text-stone-400">
+            {project.checkCount && project.lastCheckedAt
+              ? `Checked ${project.checkCount}× · Last ${new Date(
+                  project.lastCheckedAt
+                ).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}`
+              : "Not checked yet"}
+          </p>
         </div>
         <StatusBadge status={project.status} />
       </div>
@@ -115,9 +141,39 @@ export default function AdminProjectDetailPage() {
 
       <div className="mt-6">
         <p className="text-sm font-semibold text-stone-800">Construction stages</p>
-        <p className="mt-1 text-xs text-stone-400">Tap a stage to mark it complete/incomplete.</p>
+        <p className="mt-1 text-xs text-stone-400">
+          Tap a stage to mark it complete/incomplete. Tap ✕ to remove one you don't need.
+        </p>
         <div className="mt-3">
-          <StageChecklist stages={project.stages} onToggle={toggleStage} />
+          <StageChecklist
+            stages={project.stages}
+            onToggle={toggleStage}
+            onDelete={deleteStage}
+          />
+        </div>
+
+        <div className="mt-3 flex gap-2">
+          <input
+            type="text"
+            placeholder="e.g. Kitchen Tiles"
+            value={newStageLabel}
+            onChange={(event) => setNewStageLabel(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addStage();
+              }
+            }}
+            className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+          />
+          <button
+            type="button"
+            onClick={addStage}
+            disabled={!newStageLabel.trim()}
+            className="shrink-0 rounded-xl border border-orange-500 px-4 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            + Add Stage
+          </button>
         </div>
       </div>
 

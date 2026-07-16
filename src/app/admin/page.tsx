@@ -11,6 +11,15 @@ function progressPercent(project: ProjectRecord) {
   return Math.round((completed / project.stages.length) * 100);
 }
 
+function lastCheckedLabel(project: ProjectRecord) {
+  if (!project.checkCount || !project.lastCheckedAt) return "Not checked yet";
+  const when = new Date(project.lastCheckedAt).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return `Checked ${project.checkCount}× · Last ${when}`;
+}
+
 export default function AdminDashboardPage() {
   const [projects, setProjects] = useState<ProjectRecord[] | null>(null);
   const [error, setError] = useState("");
@@ -78,6 +87,7 @@ export default function AdminDashboardPage() {
             <p className="mt-1 text-xs text-stone-400">
               {progressPercent(project)}% complete
             </p>
+            <p className="mt-1 text-xs text-stone-400">{lastCheckedLabel(project)}</p>
           </Link>
         ))}
       </div>

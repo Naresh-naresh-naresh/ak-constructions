@@ -79,6 +79,20 @@ export async function createProject(
   return project;
 }
 
+export async function recordProjectCheck(id: string): Promise<void> {
+  await docClient.send(
+    new UpdateCommand({
+      TableName: PROJECTS_TABLE_NAME,
+      Key: { id },
+      UpdateExpression: "SET lastCheckedAt = :now ADD checkCount :inc",
+      ExpressionAttributeValues: {
+        ":now": new Date().toISOString(),
+        ":inc": 1,
+      },
+    })
+  );
+}
+
 export async function updateProject(
   id: string,
   patch: UpdateProjectInput

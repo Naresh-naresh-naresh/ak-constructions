@@ -85,13 +85,19 @@ Copy `.env.local.example` to `.env.local` for local dev, and add the same keys i
 | Variable | Value |
 |---|---|
 | `PROJECTS_TABLE_NAME` | `ak-constructions-projects` |
-| `AWS_REGION` | `ap-southeast-2` (must match the table's region) |
-| `AWS_ACCESS_KEY_ID` | from step 2 |
-| `AWS_SECRET_ACCESS_KEY` | from step 2 |
+| `DYNAMODB_REGION` | `ap-southeast-2` (must match the table's region) |
+| `DYNAMODB_ACCESS_KEY_ID` | from step 2 |
+| `DYNAMODB_SECRET_ACCESS_KEY` | from step 2 |
 | `NEXTAUTH_URL` | your site's real URL, e.g. `https://main.xxxxxxxxx.amplifyapp.com` (locally: `http://localhost:3005`) |
 | `NEXTAUTH_SECRET` | any random 32+ char string, e.g. `openssl rand -base64 32` |
 | `ADMIN_USERNAME` | the username you picked |
 | `ADMIN_PASSWORD_HASH` | the hash from step 3 |
+
+> **Why `DYNAMODB_*` and not `AWS_*`?** AWS Amplify Hosting's console
+> rejects any environment variable starting with `AWS_` — that prefix is
+> reserved for credentials its own runtime injects automatically. The app
+> reads `DYNAMODB_REGION`/`DYNAMODB_ACCESS_KEY_ID`/`DYNAMODB_SECRET_ACCESS_KEY`
+> instead and passes them to the AWS SDK explicitly (see `src/lib/dynamodb.ts`).
 
 Redeploy after adding Amplify env vars (Amplify → **Redeploy this version**, or push a
 new commit).
