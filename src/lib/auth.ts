@@ -14,8 +14,10 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const adminUsername = process.env.ADMIN_USERNAME;
-        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+        // .trim() guards against a stray leading/trailing space or newline
+        // picked up when pasting these values into the Amplify Console.
+        const adminUsername = process.env.ADMIN_USERNAME?.trim();
+        const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH?.trim();
 
         if (!adminUsername || !adminPasswordHash) {
           throw new Error(
@@ -25,7 +27,7 @@ export const authOptions: AuthOptions = {
 
         if (!credentials?.username || !credentials?.password) return null;
 
-        const usernameMatches = credentials.username === adminUsername;
+        const usernameMatches = credentials.username.trim() === adminUsername;
         const passwordMatches = await bcrypt.compare(
           credentials.password,
           adminPasswordHash
