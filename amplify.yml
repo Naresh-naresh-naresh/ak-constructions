@@ -7,16 +7,18 @@ frontend:
     build:
       commands:
         # Amplify Secrets are runtime-only; Next.js inlines server env vars at
-        # build time. Write them into .env.production so NextAuth sees
-        # NEXTAUTH_SECRET during `next build`, not just in the SSR Lambda.
-        - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
-        - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
-        - echo "ADMIN_USERNAME=$ADMIN_USERNAME" >> .env.production
-        - echo "ADMIN_PASSWORD_HASH=$ADMIN_PASSWORD_HASH" >> .env.production
-        - echo "PROJECTS_TABLE_NAME=$PROJECTS_TABLE_NAME" >> .env.production
-        - echo "DYNAMODB_REGION=$DYNAMODB_REGION" >> .env.production
-        - echo "DYNAMODB_ACCESS_KEY_ID=$DYNAMODB_ACCESS_KEY_ID" >> .env.production
-        - echo "DYNAMODB_SECRET_ACCESS_KEY=$DYNAMODB_SECRET_ACCESS_KEY" >> .env.production
+        # build time. Use Node (not shell echo) so bcrypt hashes containing $
+        # are not mangled by the shell during .env.production generation.
+        - |
+          node -e "
+          const fs = require('fs');
+          const keys = [
+            'NEXTAUTH_SECRET', 'NEXTAUTH_URL', 'ADMIN_USERNAME', 'ADMIN_PASSWORD_HASH',
+            'PROJECTS_TABLE_NAME', 'DYNAMODB_REGION', 'DYNAMODB_ACCESS_KEY_ID', 'DYNAMODB_SECRET_ACCESS_KEY'
+          ];
+          const lines = keys.filter((k) => process.env[k]).map((k) => k + '=' + process.env[k]);
+          if (lines.length) fs.appendFileSync('.env.production', lines.join('\n') + '\n');
+          "
         - npm run build
   artifacts:
     baseDirectory: .next

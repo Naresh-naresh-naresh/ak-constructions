@@ -100,6 +100,12 @@ Copy `.env.local.example` to `.env.local` for local dev, and add the same keys i
 > `present: true` while NextAuth still throws `[MissingSecretError]`. Set these
 > keys under **Environment variables** (or both), and keep the `amplify.yml`
 > step that writes them to `.env.production` before the build.
+>
+> **Bcrypt hash gotcha:** a valid `ADMIN_PASSWORD_HASH` is always **60 characters**
+> (starts with `$2b$10$`). If `/api/debug-env` shows `length: 34` or similar,
+> the hash was corrupted — usually by shell `$` expansion when pasting or during
+> build. Update **both** Environment variables and Secrets with the full hash,
+> then redeploy and confirm `length: 60`.
 
 > **Why `DYNAMODB_*` and not `AWS_*`?** AWS Amplify Hosting's console
 > rejects any environment variable starting with `AWS_` — that prefix is
