@@ -20,6 +20,8 @@ export type ProjectRecord = {
   notes?: string;
   createdAt: string;
   updatedAt: string;
+  lastCheckedAt?: string;
+  checkCount?: number;
 };
 
 export type CreateProjectInput = {

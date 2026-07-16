@@ -46,6 +46,12 @@ export default function Header({ onGetQuote }: HeaderProps) {
           >
             {clientConfig.phone}
           </a>
+          <Link
+            href="/track"
+            className="hidden rounded-full border border-orange-500 px-5 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-50 sm:block"
+          >
+            Login
+          </Link>
           <button
             type="button"
             onClick={onGetQuote}
@@ -85,7 +91,7 @@ export default function Header({ onGetQuote }: HeaderProps) {
                 onClick={closeMenu}
                 className="block rounded-lg px-3 py-3 text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-orange-600"
               >
-                Track My Project
+                Login
               </Link>
             </li>
             <li>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { clientConfig } from "@/config/client";
 
 const inter = Inter({
@@ -27,6 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
       <body className="min-h-screen bg-white font-sans text-stone-900 antialiased">
+        <GoogleAnalytics />
         {children}
       </body>
     </html>

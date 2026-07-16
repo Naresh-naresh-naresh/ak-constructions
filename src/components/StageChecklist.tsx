@@ -3,9 +3,10 @@ import type { ConstructionStage } from "@/types/project";
 type StageChecklistProps = {
   stages: ConstructionStage[];
   onToggle?: (key: string) => void;
+  onDelete?: (key: string) => void;
 };
 
-export default function StageChecklist({ stages, onToggle }: StageChecklistProps) {
+export default function StageChecklist({ stages, onToggle, onDelete }: StageChecklistProps) {
   const editable = Boolean(onToggle);
 
   return (
@@ -33,12 +34,22 @@ export default function StageChecklist({ stages, onToggle }: StageChecklistProps
             {stage.completed ? "✓" : index + 1}
           </button>
           <span
-            className={`text-sm font-medium ${
+            className={`flex-1 text-sm font-medium ${
               stage.completed ? "text-green-800" : "text-stone-700"
             }`}
           >
             {stage.label}
           </span>
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => onDelete(stage.key)}
+              aria-label={`Remove ${stage.label} stage`}
+              className="shrink-0 text-lg leading-none text-stone-400 hover:text-red-600"
+            >
+              ✕
+            </button>
+          )}
         </li>
       ))}
     </ol>

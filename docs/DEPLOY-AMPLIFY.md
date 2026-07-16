@@ -54,6 +54,20 @@ Share this with AK Constructions immediately.
 2. Create budget: **$10** and **$20** monthly alerts
 3. Email: your personal email
 
+## Google Analytics (optional)
+
+Want to see which pages visitors hit, how many, device/location, in a real
+dashboard? Takes 5 minutes:
+
+1. Go to [analytics.google.com](https://analytics.google.com) → **Admin** →
+   **Create property** → follow the prompts for a website property
+2. Copy the **Measurement ID** it gives you (format `G-XXXXXXXXXX`)
+3. Add it as an Amplify env var: `NEXT_PUBLIC_GA_ID` = that ID
+4. Redeploy — the site now sends traffic data to your GA dashboard
+
+Leave `NEXT_PUBLIC_GA_ID` unset (or blank) to disable analytics entirely —
+nothing loads, no tracking script, no error.
+
 ## Auto-deploy on every push
 
 After setup, any `git push` to `main` automatically redeploys the site.
