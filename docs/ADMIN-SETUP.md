@@ -68,14 +68,22 @@ Pick a username and password for yourself, then run:
 node -e "console.log(require('bcryptjs').hashSync('YOUR_PASSWORD_HERE', 10))"
 ```
 
-Copy the printed hash — that's what goes in `ADMIN_PASSWORD_HASH` (never store the
+Copy the printed hash — that's what goes in `ADMIN_PASSWORD_HASH` locally (never store the
 plain password).
+
+For **Amplify production**, base64-encode the hash instead (avoids `$` being stripped
+by Amplify's build shell — a 60-char hash often becomes 34 chars and login fails):
+
+```bash
+node -e "const h=require('bcryptjs').hashSync('YOUR_PASSWORD_HERE',10); console.log('B64='+Buffer.from(h,'utf8').toString('base64'))"
+```
+
+Use the `B64=...` value as `ADMIN_PASSWORD_HASH_B64` in Amplify Console.
 
 > **Gotcha:** in `.env.local` (local dev only), Next.js expands `$` as variable
 > syntax, which mangles a bcrypt hash like `$2b$10$...`. Escape every `$` as `\$`
-> in `.env.local`, e.g. `ADMIN_PASSWORD_HASH=\$2b\$10\$abc...`. This does **not**
-> apply to Amplify Console env vars — those are injected directly, no escaping
-> needed there.
+> in `.env.local`, e.g. `ADMIN_PASSWORD_HASH=\$2b\$10\$abc...`. Or set
+> `ADMIN_PASSWORD_HASH_B64` locally instead (no escaping needed).
 
 ## 4. Set environment variables
 
@@ -92,7 +100,13 @@ Copy `.env.local.example` to `.env.local` for local dev, and add the same keys i
 | `NEXTAUTH_URL` | your site's real URL, e.g. `https://main.xxxxxxxxx.amplifyapp.com` (locally: `http://localhost:3005`) |
 | `NEXTAUTH_SECRET` | any random 32+ char string, e.g. `openssl rand -base64 32` |
 | `ADMIN_USERNAME` | the username you picked |
-| `ADMIN_PASSWORD_HASH` | the hash from step 3 |
+| `ADMIN_PASSWORD_HASH_B64` | base64 of the hash from step 3 (**use this on Amplify**) |
+| `ADMIN_PASSWORD_HASH` | optional locally; plain bcrypt hash (see step 3) |
+
+> **Amplify bcrypt gotcha:** plain `ADMIN_PASSWORD_HASH` containing `$2b$10$...`
+> is often truncated to ~34 characters during Amplify's build (`echo` strips `$`).
+> `/api/debug-env` → `adminPasswordHashEffective.length` must be **60**. If not,
+> set `ADMIN_PASSWORD_HASH_B64` instead and remove the plain hash var.
 
 > **Build-time vs runtime:** Amplify **Secrets** are injected into the SSR Lambda
 > at request time, but Next.js reads server env vars during `npm run build`. If
