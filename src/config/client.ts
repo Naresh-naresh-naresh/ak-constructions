@@ -18,12 +18,11 @@ export const clientConfig = {
 } as const;
 
 export const navLinks = [
-  { label: "Kitchen Designs", href: "#services" },
-  { label: "Living Room", href: "#gallery" },
-  { label: "Bedroom", href: "#gallery" },
-  { label: "Recent Projects", href: "#gallery" },
-  { label: "Reviews", href: "#reviews" },
+  { label: "Our Work", href: "#gallery" },
+  { label: "Services", href: "#services" },
   { label: "How It Works", href: "#how-it-works" },
+  { label: "Reviews", href: "#reviews" },
+  { label: "Contact", href: "#contact" },
 ] as const;
 
 export const bhkOptions = [
