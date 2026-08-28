@@ -10,9 +10,21 @@ export default function AdminTopBar() {
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/admin" className="font-bold text-stone-900">
-          {clientConfig.name} <span className="text-orange-600">Admin</span>
-        </Link>
+        <div className="flex items-baseline gap-4">
+          <Link href="/admin" className="font-bold text-stone-900">
+            {clientConfig.name} <span className="text-orange-600">Admin</span>
+          </Link>
+          {session?.user?.role === "admin" && (
+            <nav className="flex gap-3 text-sm">
+              <Link href="/admin" className="text-stone-600 hover:text-orange-600">
+                Projects
+              </Link>
+              <Link href="/admin/leads" className="text-stone-600 hover:text-orange-600">
+                Enquiries
+              </Link>
+            </nav>
+          )}
+        </div>
         {/* Role-gated: a client session shares the same cookie, and shouldn't
             render admin chrome. */}
         {session?.user?.role === "admin" && (

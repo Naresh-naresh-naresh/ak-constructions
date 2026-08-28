@@ -1,50 +1,51 @@
 import { NextResponse } from "next/server";
-import { clientConfig } from "@/config/client";
-import { formatIndianCurrency } from "@/lib/utils";
-import type { QuoteFormData } from "@/types/quote";
+import { createQuote } from "@/lib/quotes";
+import { normalizePhone } from "@/lib/utils";
+import type { CreateQuoteInput } from "@/types/quote";
 
-type QuoteRequestBody = QuoteFormData & {
-  estimate: number;
-};
+export const dynamic = "force-dynamic";
 
+/**
+ * Public quote/enquiry endpoint.
+ *
+ * Leads are persisted to the database — an earlier version only console.logged
+ * them, which meant every enquiry submitted on the live site was silently lost.
+ * Deliberately does NOT log the submitted name/phone/email: that would put
+ * customer PII into hosting logs for no benefit now that it's stored properly.
+ */
 export async function POST(request: Request) {
+  let body: CreateQuoteInput;
   try {
-    const body = (await request.json()) as QuoteRequestBody;
+    body = (await request.json()) as CreateQuoteInput;
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 
-    if (!body.name || !body.phone || !body.sqFt) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+  const phone = normalizePhone(body.phone ?? "");
 
-    const leadSummary = {
-      client: clientConfig.name,
-      receivedAt: new Date().toISOString(),
-      lead: {
-        name: body.name,
-        phone: body.phone,
-        email: body.email || "Not provided",
-        city: body.city,
-        bhk: body.bhk,
-        sqFt: body.sqFt,
-        workType: body.workType,
-        timeline: body.timeline,
-        estimate: formatIndianCurrency(body.estimate),
-      },
-    };
+  if (!body.name?.trim() || phone.length !== 10 || !body.sqFt) {
+    return NextResponse.json(
+      { error: "Please enter your name, a valid 10-digit mobile number, and area." },
+      { status: 400 }
+    );
+  }
 
-    // v1: log to server console. Replace with SES email or Google Sheets webhook.
-    console.log("New quote request:", JSON.stringify(leadSummary, null, 2));
+  try {
+    await createQuote({ ...body, phone });
 
     return NextResponse.json({
       success: true,
       message: "Quote request received",
     });
-  } catch {
+  } catch (error) {
+    // No PII in the log line — just enough to know a write failed.
+    console.error("Failed to save quote request:", error);
     return NextResponse.json(
-      { error: "Invalid request" },
-      { status: 500 }
+      {
+        error:
+          "We couldn't submit your request just now. Please call or WhatsApp us instead.",
+      },
+      { status: 503 }
     );
   }
 }
