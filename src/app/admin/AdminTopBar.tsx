@@ -13,7 +13,9 @@ export default function AdminTopBar() {
         <Link href="/admin" className="font-bold text-stone-900">
           {clientConfig.name} <span className="text-orange-600">Admin</span>
         </Link>
-        {session && (
+        {/* Role-gated: a client session shares the same cookie, and shouldn't
+            render admin chrome. */}
+        {session?.user?.role === "admin" && (
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/admin/login" })}

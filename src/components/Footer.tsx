@@ -35,7 +35,7 @@ export default function Footer() {
             </li>
             <li>{clientConfig.city}</li>
             <li>
-              <Link href="/track" className="font-medium hover:text-orange-600">
+              <Link href="/login" className="font-medium hover:text-orange-600">
                 Login →
               </Link>
             </li>

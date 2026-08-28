@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { STAGE_TEMPLATE } from "@/config/stages";
 import { getSupabase, PROJECTS_TABLE } from "@/lib/supabase";
 import { normalizePhone } from "@/lib/utils";
@@ -26,6 +26,19 @@ import type {
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** No 0/O or 1/I/L — these codes get read off a phone screen and typed by hand. */
+const SIGNUP_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const SIGNUP_CODE_LENGTH = 7;
+
+export function generateSignupCode(): string {
+  const bytes = randomBytes(SIGNUP_CODE_LENGTH);
+  let code = "";
+  for (let i = 0; i < SIGNUP_CODE_LENGTH; i += 1) {
+    code += SIGNUP_CODE_ALPHABET[bytes[i] % SIGNUP_CODE_ALPHABET.length];
+  }
+  return code;
+}
 
 export function calculateProgressPercent(stages: ConstructionStage[]): number {
   if (stages.length === 0) return 0;
@@ -91,12 +104,57 @@ export async function createProject(
     })),
     createdAt: now,
     updatedAt: now,
+    signupCode: generateSignupCode(),
   };
 
   const { error } = await getSupabase().from(PROJECTS_TABLE).insert(project);
 
   if (error) throw new Error(`createProject failed: ${error.message}`);
   return project;
+}
+
+/**
+ * The signup gate: does this phone own a project with this invite code?
+ *
+ * The code is the secret here — a phone number alone is not proof of identity,
+ * since it was the public key to the old tracker. Comparison is case-insensitive
+ * on the code because clients type it by hand.
+ */
+export async function isValidSignupCode(
+  phone: string,
+  code: string
+): Promise<boolean> {
+  const normalizedPhone = normalizePhone(phone);
+  const normalizedCode = code.trim().toUpperCase();
+  if (normalizedPhone.length !== 10 || !normalizedCode) return false;
+
+  const { data, error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .select("id")
+    .eq("phone", normalizedPhone)
+    .eq("signupCode", normalizedCode)
+    .limit(1);
+
+  if (error) throw new Error(`isValidSignupCode failed: ${error.message}`);
+  return (data ?? []).length > 0;
+}
+
+/**
+ * Issues fresh invite codes for every project on a phone. Called by the admin
+ * reset action so a leaked or already-used code cannot be replayed.
+ */
+export async function regenerateSignupCodes(phone: string): Promise<void> {
+  const normalized = normalizePhone(phone);
+  if (normalized.length !== 10) {
+    throw new Error("regenerateSignupCodes called with an invalid phone");
+  }
+
+  const { error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .update({ signupCode: generateSignupCode(), updatedAt: new Date().toISOString() })
+    .eq("phone", normalized);
+
+  if (error) throw new Error(`regenerateSignupCodes failed: ${error.message}`);
 }
 
 export async function recordProjectCheck(id: string): Promise<void> {

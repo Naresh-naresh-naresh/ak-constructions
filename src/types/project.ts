@@ -22,6 +22,8 @@ export type ProjectRecord = {
   updatedAt: string;
   lastCheckedAt?: string;
   checkCount?: number;
+  /** One-time code the admin shares so this client can register an account. */
+  signupCode?: string;
 };
 
 export type CreateProjectInput = {
@@ -39,8 +41,14 @@ export type UpdateProjectInput = {
   notes?: string;
 };
 
-/** Subset of a ProjectRecord safe to expose on the public tracker page. */
-export type PublicProjectStatus = {
+/**
+ * Subset of a ProjectRecord shown to a logged-in client.
+ *
+ * Deliberately omits `notes` (admin-only scratchpad), `phone`, `id`,
+ * `signupCode`, and the check counters. Being authenticated does not entitle a
+ * client to admin-side fields.
+ */
+export type ClientProjectStatus = {
   clientName: string;
   siteLocation: string;
   areaSqFt: number;
