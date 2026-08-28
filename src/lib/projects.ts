@@ -1,13 +1,6 @@
-import {
-  GetCommand,
-  PutCommand,
-  QueryCommand,
-  ScanCommand,
-  UpdateCommand,
-} from "@aws-sdk/lib-dynamodb";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { STAGE_TEMPLATE } from "@/config/stages";
-import { docClient, PHONE_INDEX_NAME, PROJECTS_TABLE_NAME } from "@/lib/dynamodb";
+import { getSupabase, PROJECTS_TABLE } from "@/lib/supabase";
 import { normalizePhone } from "@/lib/utils";
 import type {
   ConstructionStage,
@@ -16,6 +9,24 @@ import type {
   UpdateProjectInput,
 } from "@/types/project";
 
+/**
+ * NOTE ON COLUMN NAMING: the `projects` table intentionally uses quoted
+ * camelCase columns ("clientName", "areaSqFt", ...) rather than Postgres'
+ * conventional snake_case, so rows map 1:1 onto ProjectRecord with no mapper
+ * layer. Please don't "fix" this to snake_case without adding that mapping.
+ * Consequence: any hand-written SQL must quote those identifiers, or Postgres
+ * folds them to lowercase and errors.
+ *
+ * NOTE ON ERRORS: supabase-js does NOT throw on query failure — it returns
+ * { data: null, error }. The API routes calling this module rely on thrown
+ * errors to return 503. So every function below checks `error` and throws.
+ * Never swallow an error into an empty array/null, or a database outage would
+ * surface to users as "No projects yet" / "No project found for this number".
+ */
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function calculateProgressPercent(stages: ConstructionStage[]): number {
   if (stages.length === 0) return 0;
   const completedCount = stages.filter((stage) => stage.completed).length;
@@ -23,31 +34,41 @@ export function calculateProgressPercent(stages: ConstructionStage[]): number {
 }
 
 export async function listProjects(): Promise<ProjectRecord[]> {
-  const result = await docClient.send(
-    new ScanCommand({ TableName: PROJECTS_TABLE_NAME })
-  );
-  return (result.Items as ProjectRecord[]) || [];
+  const { data, error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .select("*")
+    .order("createdAt", { ascending: false });
+
+  if (error) throw new Error(`listProjects failed: ${error.message}`);
+  return (data ?? []) as ProjectRecord[];
 }
 
 export async function getProject(id: string): Promise<ProjectRecord | null> {
-  const result = await docClient.send(
-    new GetCommand({ TableName: PROJECTS_TABLE_NAME, Key: { id } })
-  );
-  return (result.Item as ProjectRecord) || null;
+  // Guard non-UUID ids: Postgres would raise 22P02, which the route would turn
+  // into a 503 instead of the correct 404.
+  if (!UUID_RE.test(id)) return null;
+
+  const { data, error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(`getProject failed: ${error.message}`);
+  return (data as ProjectRecord | null) ?? null;
 }
 
 export async function getProjectsByPhone(
   phone: string
 ): Promise<ProjectRecord[]> {
-  const result = await docClient.send(
-    new QueryCommand({
-      TableName: PROJECTS_TABLE_NAME,
-      IndexName: PHONE_INDEX_NAME,
-      KeyConditionExpression: "phone = :phone",
-      ExpressionAttributeValues: { ":phone": normalizePhone(phone) },
-    })
-  );
-  return (result.Items as ProjectRecord[]) || [];
+  const { data, error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .select("*")
+    .eq("phone", normalizePhone(phone))
+    .order("createdAt", { ascending: false });
+
+  if (error) throw new Error(`getProjectsByPhone failed: ${error.message}`);
+  return (data ?? []) as ProjectRecord[];
 }
 
 export async function createProject(
@@ -55,7 +76,7 @@ export async function createProject(
 ): Promise<ProjectRecord> {
   const now = new Date().toISOString();
   const project: ProjectRecord = {
-    id: uuidv4(),
+    id: randomUUID(),
     clientName: input.clientName,
     phone: normalizePhone(input.phone),
     siteLocation: input.siteLocation,
@@ -72,57 +93,46 @@ export async function createProject(
     updatedAt: now,
   };
 
-  await docClient.send(
-    new PutCommand({ TableName: PROJECTS_TABLE_NAME, Item: project })
-  );
+  const { error } = await getSupabase().from(PROJECTS_TABLE).insert(project);
 
+  if (error) throw new Error(`createProject failed: ${error.message}`);
   return project;
 }
 
 export async function recordProjectCheck(id: string): Promise<void> {
-  await docClient.send(
-    new UpdateCommand({
-      TableName: PROJECTS_TABLE_NAME,
-      Key: { id },
-      UpdateExpression: "SET lastCheckedAt = :now ADD checkCount :inc",
-      ExpressionAttributeValues: {
-        ":now": new Date().toISOString(),
-        ":inc": 1,
-      },
-    })
-  );
+  if (!UUID_RE.test(id)) return;
+
+  // An RPC rather than .update(): PostgREST cannot express `checkCount + 1`,
+  // and a read-then-write would lose concurrent increments.
+  const { error } = await getSupabase().rpc("increment_project_check", {
+    project_id: id,
+  });
+
+  if (error) throw new Error(`recordProjectCheck failed: ${error.message}`);
 }
 
 export async function updateProject(
   id: string,
   patch: UpdateProjectInput
 ): Promise<ProjectRecord | null> {
-  const existing = await getProject(id);
-  if (!existing) return null;
+  if (!UUID_RE.test(id)) return null;
 
-  const updated: ProjectRecord = {
-    ...existing,
-    ...(patch.status !== undefined ? { status: patch.status } : {}),
-    ...(patch.stages !== undefined ? { stages: patch.stages } : {}),
-    ...(patch.notes !== undefined ? { notes: patch.notes } : {}),
+  // Built conditionally: a blind spread would null out columns the patch omits.
+  const changes: Record<string, unknown> = {
     updatedAt: new Date().toISOString(),
   };
+  if (patch.status !== undefined) changes.status = patch.status;
+  if (patch.stages !== undefined) changes.stages = patch.stages;
+  if (patch.notes !== undefined) changes.notes = patch.notes;
 
-  await docClient.send(
-    new UpdateCommand({
-      TableName: PROJECTS_TABLE_NAME,
-      Key: { id },
-      UpdateExpression:
-        "SET #status = :status, stages = :stages, notes = :notes, updatedAt = :updatedAt",
-      ExpressionAttributeNames: { "#status": "status" },
-      ExpressionAttributeValues: {
-        ":status": updated.status,
-        ":stages": updated.stages,
-        ":notes": updated.notes ?? null,
-        ":updatedAt": updated.updatedAt,
-      },
-    })
-  );
+  const { data, error } = await getSupabase()
+    .from(PROJECTS_TABLE)
+    .update(changes)
+    .eq("id", id)
+    .select()
+    .maybeSingle();
 
-  return updated;
+  if (error) throw new Error(`updateProject failed: ${error.message}`);
+  // 0 rows matched → project doesn't exist → let the route return 404.
+  return (data as ProjectRecord | null) ?? null;
 }

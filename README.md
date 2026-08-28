@@ -76,9 +76,9 @@ export const clientConfig = {
 
 3. **Optional:** Edit titles/captions in `src/content/projects.ts`
 
-4. **Preview:** `npm run dev` → open [http://localhost:3000](http://localhost:3000)
+4. **Preview:** `npm run dev` → open [http://localhost:3005](http://localhost:3005)
 
-5. **Deploy** to AWS Amplify (push to GitHub)
+5. **Deploy:** push to GitHub — Vercel auto-deploys `main`
 
 Until photos are added, the site shows a soft gradient placeholder — not broken images.
 
@@ -155,27 +155,26 @@ ssh -T git@github-personal
 # Expected: Hi Naresh-naresh-naresh! You've successfully authenticated...
 ```
 
-## Deploy to AWS (low traffic)
+## Deploy
 
-**Option A — AWS Amplify (easiest)**
+Hosting is **Vercel**, database is **Supabase Postgres** — both on free tiers.
 
-1. Push repo to GitHub
-2. Amplify Console → Connect repo → deploy
-3. Add custom domain in Route53
+1. [docs/ADMIN-SETUP.md](docs/ADMIN-SETUP.md) — create the Supabase project +
+   table, generate admin credentials
+2. [docs/DEPLOY-VERCEL.md](docs/DEPLOY-VERCEL.md) — import the repo, set env
+   vars, deploy
 
-**Option B — S3 + CloudFront**
+**Estimated cost:** $0/month at this traffic level.
 
-1. `npm run build` (static export — add `output: 'export'` to next.config if needed)
-2. Upload `out/` to S3
-3. CloudFront distribution + ACM certificate
-
-**Estimated cost:** ~₹300–600/month at low traffic.
+> Previously hosted on AWS Amplify + DynamoDB; migrated off after the AWS
+> account was suspended. See git history for the Amplify config if needed.
 
 ## Next steps
 
 - [ ] Collect photos from client on WhatsApp → save to `public/images/gallery/`
-- [ ] Connect `/api/quote` to AWS SES (email alerts) or Google Sheets
-- [ ] Add Google Analytics
+- [ ] Persist `/api/quote` submissions (currently console-logged only) and/or
+      wire up email alerts
+- [ ] Add Google Analytics (set `NEXT_PUBLIC_GA_ID`)
 - [ ] Set up custom domain
 - [ ] Record 5-min Loom demo for client handoff
 
@@ -186,6 +185,6 @@ To create a site for **client #2**:
 1. Copy this folder
 2. Update `src/config/client.ts` only
 3. Swap photos and testimonials
-4. Deploy to a new Amplify app or S3 bucket
+4. Deploy as a new Vercel project (+ its own Supabase project)
 
 Same template, new brand — ship in days, not weeks.

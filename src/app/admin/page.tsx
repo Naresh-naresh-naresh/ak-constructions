@@ -31,7 +31,7 @@ export default function AdminDashboardPage() {
         const data = await response.json();
         setProjects(data.projects);
       })
-      .catch(() => setError("Could not load projects. Check AWS/DynamoDB setup."));
+      .catch(() => setError("Could not load projects. Check the Supabase setup."));
   }, []);
 
   return (

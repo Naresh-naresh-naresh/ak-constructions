@@ -7,9 +7,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Dot access (not process.env["..."]) so Next statically inlines this for the
+  // Edge runtime that middleware always runs on. With bracket access the secret
+  // can come through undefined, and the symptom is opaque: login succeeds, then
+  // every /admin request bounces straight back to /admin/login with no error.
   const token = await getToken({
     req: request,
-    secret: process.env["NEXTAUTH_SECRET"],
+    secret: process.env.NEXTAUTH_SECRET,
   });
 
   if (!token) {

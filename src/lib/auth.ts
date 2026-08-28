@@ -18,8 +18,8 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // .trim() guards against a stray leading/trailing space or newline
-        // picked up when pasting these values into the Amplify Console.
+        // These getters .trim() to guard against a stray leading/trailing space
+        // or newline picked up when pasting values into a hosting dashboard.
         const adminUsername = getAdminUsername();
         const adminPasswordHash = getAdminPasswordHash();
 
