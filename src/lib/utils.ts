@@ -17,9 +17,17 @@ export function normalizePhone(phone: string): string {
   return digitsOnly.slice(-10);
 }
 
+/**
+ * Builds a wa.me deep link.
+ *
+ * Both parts are URI-encoded and the scheme/host are hardcoded, so neither
+ * argument can alter the URL's structure or inject a `javascript:` scheme —
+ * which matters because callers interpolate database values (client name,
+ * invite code) into the message.
+ */
 export function buildWhatsAppUrl(
   phone: string,
   message: string
 ): string {
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${encodeURIComponent(phone)}?text=${encodeURIComponent(message)}`;
 }

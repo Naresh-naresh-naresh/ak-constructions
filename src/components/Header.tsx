@@ -47,7 +47,7 @@ export default function Header({ onGetQuote }: HeaderProps) {
             {clientConfig.phone}
           </a>
           <Link
-            href="/track"
+            href="/login"
             className="hidden rounded-full border border-orange-500 px-5 py-2.5 text-sm font-semibold text-orange-600 transition hover:bg-orange-50 sm:block"
           >
             Login
@@ -87,7 +87,7 @@ export default function Header({ onGetQuote }: HeaderProps) {
             ))}
             <li>
               <Link
-                href="/track"
+                href="/login"
                 onClick={closeMenu}
                 className="block rounded-lg px-3 py-3 text-base font-medium text-stone-700 hover:bg-stone-50 hover:text-orange-600"
               >

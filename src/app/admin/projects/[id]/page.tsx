@@ -4,7 +4,9 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import StageChecklist from "@/components/StageChecklist";
 import StatusBadge from "@/components/StatusBadge";
+import { clientConfig } from "@/config/client";
 import { PROJECT_STATUS_LABELS } from "@/config/stages";
+import { buildWhatsAppUrl } from "@/lib/utils";
 import type { ProjectRecord, ProjectStatus } from "@/types/project";
 
 export default function AdminProjectDetailPage() {
@@ -15,6 +17,45 @@ export default function AdminProjectDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [newStageLabel, setNewStageLabel] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+
+  // Used to build an absolute signup link for the WhatsApp message.
+  const siteOrigin = typeof window === "undefined" ? "" : window.location.origin;
+
+  const resetClientLogin = async () => {
+    if (!project) return;
+    if (
+      !window.confirm(
+        "Reset this client's login? Their current password stops working and a new invite code is issued."
+      )
+    ) {
+      return;
+    }
+
+    setIsResetting(true);
+    setResetMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/admin/client-accounts/${encodeURIComponent(project.phone)}`,
+        { method: "DELETE" }
+      );
+      if (!response.ok) throw new Error("Reset failed");
+
+      // Reload so the newly issued signup code is shown.
+      const refreshed = await fetch(`/api/admin/projects/${project.id}`);
+      if (refreshed.ok) {
+        const data = await refreshed.json();
+        setProject(data.project);
+      }
+      setResetMessage("Done — send the client the new invite code.");
+    } catch {
+      setResetMessage("Could not reset the login. Please try again.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   useEffect(() => {
     fetch(`/api/admin/projects/${params.id}`)
@@ -119,6 +160,51 @@ export default function AdminProjectDetailPage() {
           </p>
         </div>
         <StatusBadge status={project.status} />
+      </div>
+
+      <div className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
+        <p className="text-sm font-semibold text-stone-800">Client login</p>
+        <p className="mt-1 text-xs text-stone-400">
+          Send this invite code to the client — they need it once, to create
+          their account at /signup.
+        </p>
+
+        <div className="mt-3 flex items-center gap-2">
+          <code className="flex-1 rounded-lg bg-stone-100 px-3 py-2 font-mono text-lg tracking-widest text-stone-900">
+            {project.signupCode || "—"}
+          </code>
+          {project.signupCode && (
+            /* Snyk Code flags this dynamic href as DOM XSS (taint from a
+               useState value). Reviewed false positive: buildWhatsAppUrl
+               percent-encodes both arguments and hardcodes the https://wa.me
+               scheme, so an interpolated DB value cannot alter the URL's
+               structure or inject a javascript: scheme. The analyzer can't see
+               through the helper's encodeURIComponent. */
+            <a
+              href={buildWhatsAppUrl(
+                project.phone,
+                `Hi ${project.clientName}, you can now track your project with ${clientConfig.name}.\n\nCreate your account here: ${siteOrigin}/signup\nMobile: ${project.phone}\nInvite code: ${project.signupCode}`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-lg bg-green-500 px-3 py-2 text-sm font-semibold text-white hover:bg-green-600"
+            >
+              WhatsApp
+            </a>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={resetClientLogin}
+          disabled={isResetting}
+          className="mt-3 text-xs font-medium text-stone-500 underline hover:text-red-600 disabled:opacity-50"
+        >
+          {isResetting ? "Resetting..." : "Reset client login (issues a new code)"}
+        </button>
+        {resetMessage && (
+          <p className="mt-2 text-xs text-stone-500">{resetMessage}</p>
+        )}
       </div>
 
       <div className="mt-6">

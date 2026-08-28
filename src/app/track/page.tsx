@@ -1,79 +1,59 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
+import SignOutButton from "@/app/track/SignOutButton";
 import StageChecklist from "@/components/StageChecklist";
 import StatusBadge from "@/components/StatusBadge";
 import { clientConfig } from "@/config/client";
-import type { PublicProjectStatus } from "@/types/project";
+import { requireClientPhone } from "@/lib/authz";
+import {
+  calculateProgressPercent,
+  getProjectsByPhone,
+  recordProjectCheck,
+} from "@/lib/projects";
+import { buildWhatsAppUrl } from "@/lib/utils";
+import type { ClientProjectStatus } from "@/types/project";
 
-const CLIENT_PHONE_KEY = "ak_client_phone";
+/**
+ * Client dashboard — a Server Component on purpose.
+ *
+ * Reading the session and querying directly here means there is no per-user GET
+ * API route to accidentally cache (the classic App Router auth bug), no
+ * client-side fetch, and no way to pass someone else's phone number: the phone
+ * comes only from the session.
+ */
+export const dynamic = "force-dynamic";
 
-export default function TrackProjectPage() {
-  const [phone, setPhone] = useState("");
-  const [projects, setProjects] = useState<PublicProjectStatus[] | null>(null);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+export default async function ClientDashboardPage() {
+  const phone = await requireClientPhone();
+  // Middleware already guards this path; this is defence in depth in case the
+  // matcher is ever changed.
+  if (!phone) redirect("/login");
 
-  const lookup = async (phoneToCheck: string, opts: { silent?: boolean } = {}) => {
-    setIsLoading(true);
-    if (!opts.silent) setError("");
+  let projects: ClientProjectStatus[] = [];
+  let loadFailed = false;
 
+  try {
+    const records = await getProjectsByPhone(phone);
+
+    projects = records.map((project) => ({
+      clientName: project.clientName,
+      siteLocation: project.siteLocation,
+      areaSqFt: project.areaSqFt,
+      floors: project.floors,
+      startedOn: project.startedOn,
+      status: project.status,
+      stages: project.stages,
+      progressPercent: calculateProgressPercent(project.stages),
+    }));
+
+    // Best-effort: a logging failure must never break the dashboard.
     try {
-      const response = await fetch(`/api/track?phone=${encodeURIComponent(phoneToCheck)}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Could not find a project for this number");
-      }
-
-      setProjects(data.projects);
-      setIsSignedIn(true);
-      localStorage.setItem(CLIENT_PHONE_KEY, phoneToCheck);
-      return true;
-    } catch (err) {
-      if (!opts.silent) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
-      }
-      return false;
-    } finally {
-      setIsLoading(false);
+      await Promise.all(records.map((project) => recordProjectCheck(project.id)));
+    } catch (error) {
+      console.error("Failed to record project check:", error);
     }
-  };
-
-  useEffect(() => {
-    const savedPhone = localStorage.getItem(CLIENT_PHONE_KEY);
-    if (!savedPhone) {
-      setIsCheckingSession(false);
-      return;
-    }
-
-    lookup(savedPhone, { silent: true }).then((success) => {
-      if (!success) localStorage.removeItem(CLIENT_PHONE_KEY);
-      setIsCheckingSession(false);
-    });
-  }, []);
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    await lookup(phone);
-  };
-
-  const handleSignOut = () => {
-    localStorage.removeItem(CLIENT_PHONE_KEY);
-    setIsSignedIn(false);
-    setProjects(null);
-    setPhone("");
-    setError("");
-  };
-
-  if (isCheckingSession) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-stone-50">
-        <p className="text-sm text-stone-500">Loading...</p>
-      </div>
-    );
+  } catch (error) {
+    console.error("Failed to load client projects:", error);
+    loadFailed = true;
   }
 
   return (
@@ -82,49 +62,38 @@ export default function TrackProjectPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-stone-900">Client Dashboard</h1>
-            {!isSignedIn && (
-              <p className="mt-2 text-sm text-stone-500">
-                Log in with the mobile number you shared with {clientConfig.name} to
-                see your project status.
-              </p>
-            )}
+            <p className="mt-1 text-sm text-stone-500">{phone}</p>
           </div>
-          {isSignedIn && (
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="shrink-0 text-sm font-medium text-stone-500 underline hover:text-orange-600"
-            >
-              Sign out
-            </button>
-          )}
+          <SignOutButton />
         </div>
 
-        {!isSignedIn && (
-          <form onSubmit={handleSubmit} className="mt-6 flex gap-2">
-            <input
-              type="tel"
-              required
-              placeholder="10-digit mobile number"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              className="w-full rounded-xl border border-stone-300 px-4 py-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-            />
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="shrink-0 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+        {loadFailed && (
+          <p className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">
+            We couldn&apos;t load your project just now. Please refresh in a
+            moment.
+          </p>
+        )}
+
+        {!loadFailed && projects.length === 0 && (
+          <div className="mt-6 rounded-2xl border border-stone-200 bg-white p-5">
+            <p className="text-sm text-stone-600">
+              No project is linked to this number yet.
+            </p>
+            <a
+              href={buildWhatsAppUrl(
+                clientConfig.whatsapp,
+                `Hi ${clientConfig.name}, I've logged in but can't see my project.`
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block text-sm font-semibold text-orange-600 hover:underline"
             >
-              {isLoading ? "..." : "Login"}
-            </button>
-          </form>
+              Message us on WhatsApp →
+            </a>
+          </div>
         )}
 
-        {error && (
-          <p className="mt-6 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>
-        )}
-
-        {projects?.map((project, index) => (
+        {projects.map((project, index) => (
           <div
             key={index}
             className="mt-6 rounded-2xl border border-stone-200 bg-white p-5"
@@ -138,7 +107,9 @@ export default function TrackProjectPage() {
                 <p className="mt-0.5 text-sm text-stone-500">
                   {project.siteLocation} · {project.areaSqFt.toLocaleString("en-IN")} sq ft · {project.floors}
                 </p>
-                <p className="mt-0.5 text-xs text-stone-400">Started {project.startedOn}</p>
+                <p className="mt-0.5 text-xs text-stone-400">
+                  Started {project.startedOn}
+                </p>
               </div>
               <StatusBadge status={project.status} />
             </div>
