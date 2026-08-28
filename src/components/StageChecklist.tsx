@@ -1,5 +1,13 @@
+"use client";
+
 import type { ConstructionStage } from "@/types/project";
 
+/**
+ * Client component because it attaches onClick to its stage buttons — a Server
+ * Component cannot do that, and /track renders this from the server. Callers
+ * that only read (the client dashboard) simply omit onToggle/onDelete, and the
+ * `stages` array is plain serializable data.
+ */
 type StageChecklistProps = {
   stages: ConstructionStage[];
   onToggle?: (key: string) => void;
