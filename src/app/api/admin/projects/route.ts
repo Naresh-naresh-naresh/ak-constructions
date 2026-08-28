@@ -16,7 +16,7 @@ export async function GET() {
   } catch (error) {
     console.error("Failed to list projects:", error);
     return NextResponse.json(
-      { error: "Could not load projects. Check the AWS/DynamoDB setup." },
+      { error: "Could not load projects. Check the Supabase setup." },
       { status: 503 }
     );
   }
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Failed to create project:", error);
     return NextResponse.json(
-      { error: "Could not create project. Check the AWS/DynamoDB setup." },
+      { error: "Could not create project. Check the Supabase setup." },
       { status: 503 }
     );
   }

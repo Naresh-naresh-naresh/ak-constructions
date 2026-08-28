@@ -44,7 +44,7 @@ export default function AdminProjectDetailPage() {
       setProject(data.project);
       setSavedAt(Date.now());
     } catch {
-      setError("Could not save changes. Check AWS/DynamoDB setup.");
+      setError("Could not save changes. Check the Supabase setup.");
     } finally {
       setIsSaving(false);
     }

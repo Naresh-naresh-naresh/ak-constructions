@@ -4,8 +4,15 @@ export function getAdminUsername(): string | undefined {
 }
 
 /**
- * Prefer ADMIN_PASSWORD_HASH_B64 on Amplify — bcrypt hashes contain `$` which
- * Amplify's build shell strips when writing .env.production via echo.
+ * Supports a base64-encoded hash as well as the plain one.
+ *
+ * Why: a bcrypt hash contains `$` (e.g. `$2b$10$...`), and Next.js runs
+ * dotenv-expand over `.env.local`, which mangles it unless every `$` is escaped
+ * as `\$`. Setting ADMIN_PASSWORD_HASH_B64 avoids that footgun entirely. Hosts
+ * that inject env vars directly (Vercel) can use the plain ADMIN_PASSWORD_HASH.
+ *
+ * Set only ONE of the two per environment — the B64 branch wins unconditionally,
+ * so a stale B64 value would silently override a correct plain hash.
  */
 export function getAdminPasswordHash(): string | undefined {
   const b64 = process.env["ADMIN_PASSWORD_HASH_B64"]?.trim();

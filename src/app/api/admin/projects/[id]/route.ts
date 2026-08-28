@@ -23,7 +23,7 @@ export async function GET(
   } catch (error) {
     console.error("Failed to load project:", error);
     return NextResponse.json(
-      { error: "Could not load project. Check the AWS/DynamoDB setup." },
+      { error: "Could not load project. Check the Supabase setup." },
       { status: 503 }
     );
   }
@@ -50,7 +50,7 @@ export async function PATCH(
   } catch (error) {
     console.error("Failed to update project:", error);
     return NextResponse.json(
-      { error: "Could not save changes. Check the AWS/DynamoDB setup." },
+      { error: "Could not save changes. Check the Supabase setup." },
       { status: 503 }
     );
   }
