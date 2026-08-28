@@ -6,7 +6,6 @@ import StageChecklist from "@/components/StageChecklist";
 import StatusBadge from "@/components/StatusBadge";
 import { clientConfig } from "@/config/client";
 import { PROJECT_STATUS_LABELS } from "@/config/stages";
-import { buildWhatsAppUrl } from "@/lib/utils";
 import type { ProjectRecord, ProjectStatus } from "@/types/project";
 
 export default function AdminProjectDetailPage() {
@@ -174,17 +173,15 @@ export default function AdminProjectDetailPage() {
             {project.signupCode || "—"}
           </code>
           {project.signupCode && (
-            /* Snyk Code flags this dynamic href as DOM XSS (taint from a
-               useState value). Reviewed false positive: buildWhatsAppUrl
-               percent-encodes both arguments and hardcodes the https://wa.me
-               scheme, so an interpolated DB value cannot alter the URL's
-               structure or inject a javascript: scheme. The analyzer can't see
-               through the helper's encodeURIComponent. */
+            /* Encoding is inlined at the sink rather than delegated to
+               buildWhatsAppUrl: taint analysis recognizes encodeURIComponent
+               here but cannot see it through a helper. Phone is stripped to
+               digits and the scheme is a literal, so this href cannot be
+               redirected. */
             <a
-              href={buildWhatsAppUrl(
-                project.phone,
+              href={`https://wa.me/${encodeURIComponent(project.phone.replace(/\D/g, ""))}?text=${encodeURIComponent(
                 `Hi ${project.clientName}, you can now track your project with ${clientConfig.name}.\n\nCreate your account here: ${siteOrigin}/signup\nMobile: ${project.phone}\nInvite code: ${project.signupCode}`
-              )}
+              )}`}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 rounded-lg bg-green-500 px-3 py-2 text-sm font-semibold text-white hover:bg-green-600"

@@ -5,7 +5,12 @@
  * 2. Update the `src` paths below (must start with /images/...)
  * 3. Save — site refreshes automatically in dev mode
  *
- * Recommended size: 1200×800 px or larger, JPG/WebP, under 500 KB each
+ * Recommended: WebP, max ~1800px on the long edge, under 250 KB each.
+ * To convert a phone photo (HEIC won't display in browsers):
+ *   sips -s format jpeg -Z 1800 IMG_1234.HEIC --out tmp.jpg
+ *   cwebp -q 82 -metadata none tmp.jpg -o public/images/gallery/name.webp
+ * If a photo comes out sideways, add `--rotate 90` to the sips command —
+ * stripping metadata drops the EXIF orientation tag, so rotate the pixels.
  */
 
 export type ProjectImage = {
@@ -20,61 +25,91 @@ export type ProjectImage = {
 export const galleryProjects: ProjectImage[] = [
   {
     title: "Modular Kitchen",
-    subtitle: "Parallel & L-shaped layouts",
-    src: "/images/gallery/shopping.webp",
-    alt: "Modern modular kitchen by AK Constructions",
+    subtitle: "Custom cabinetry & counters",
+    src: "/images/gallery/kitchen.webp",
+    alt: "Modular kitchen with teal cabinetry and stone counters",
     className: "md:col-span-2 md:row-span-2",
   },
   {
     title: "Living Room",
-    subtitle: "TV unit & false ceiling",
-    src: "/images/gallery/living-room.jpg",
-    alt: "Living room interior design",
+    subtitle: "False ceiling & feature lighting",
+    src: "/images/gallery/living-room.webp",
+    alt: "Living room with leather sofas and pendant lighting",
     className: "md:col-span-1",
   },
   {
-    title: "Home Office",
-    subtitle: "Study & storage",
-    src: "/images/gallery/home-office.jpg",
-    alt: "Home office study room",
+    title: "Master Bedroom",
+    subtitle: "Wardrobes & designer ceiling",
+    src: "/images/gallery/bedroom.webp",
+    alt: "Bedroom with fitted wardrobes and a gold accent ceiling",
     className: "md:col-span-1",
   },
   {
-    title: "Bedroom",
-    subtitle: "Wardrobe & lighting",
-    src: "/images/gallery/bedroom.jpg",
-    alt: "Bedroom with custom wardrobe",
+    title: "Home Theatre",
+    subtitle: "Acoustic panels & LED lighting",
+    src: "/images/gallery/home-theatre.webp",
+    alt: "Home theatre room with recliners and blue LED cove lighting",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Pooja Room",
+    subtitle: "Custom mandir & backlit detailing",
+    src: "/images/gallery/pooja-room.webp",
+    alt: "Pooja room with a custom mandir and backlit wall detailing",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Staircase & Interiors",
+    subtitle: "Feature wall, glass railing & lighting",
+    src: "/images/gallery/staircase.webp",
+    alt: "Staircase with sculpted feature wall and glass railing",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Completed Home",
+    subtitle: "Exterior cladding & finishing",
+    src: "/images/gallery/home-exterior-1.webp",
+    alt: "Completed independent house with textured exterior cladding",
     className: "md:col-span-1",
   },
   {
     title: "Full Home Build",
-    subtitle: "Construction + interiors",
-    src: "/images/gallery/full-home.jpg",
-    alt: "Completed home construction project",
+    subtitle: "Ground + 2 floors, handed over",
+    src: "/images/gallery/home-exterior-2.webp",
+    alt: "Completed multi-storey residential building by AK Constructions",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Our Design Studio",
+    subtitle: "Visit us to plan your build",
+    src: "/images/gallery/office-1.webp",
+    alt: "AK Constructions design studio and reception",
     className: "md:col-span-1",
   },
 ];
 
-/** Hero section — 4 smaller showcase images on the right */
+/** Hero section — featured image plus the collage below it */
 export const heroImages = [
+  // NOTE: index 0 doubles as the large featured image in Hero.tsx, so keep the
+  // strongest landscape shot first — portrait photos crop badly there.
   {
-    src: "/images/gallery/shopping.webp",
-    alt: "AK Constructions interior project",
+    src: "/images/gallery/living-room.webp",
+    alt: "Living room interior by AK Constructions",
     className: "h-48",
   },
   {
-    src: "/images/gallery/hero-2.jpg",
-    alt: "AK Constructions kitchen design",
+    src: "/images/gallery/kitchen.webp",
+    alt: "Modular kitchen by AK Constructions",
     className: "h-36",
   },
   {
-    src: "/images/gallery/hero-3.jpg",
-    alt: "AK Constructions living room",
+    src: "/images/gallery/bedroom.webp",
+    alt: "Bedroom with fitted wardrobes",
     className: "h-36",
   },
   {
-    src: "/images/gallery/hero-4.jpg",
-    alt: "AK Constructions bedroom design",
+    src: "/images/gallery/home-theatre.webp",
+    alt: "Home theatre room with LED cove lighting",
     className: "h-48",
   },
 ];
