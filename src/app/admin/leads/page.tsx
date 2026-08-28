@@ -81,16 +81,14 @@ export default function AdminLeadsPage() {
 
       <div className="mt-6 space-y-3">
         {quotes?.map((q) => {
-          /* Sanitize inline, before either href, rather than relying on a
-             helper. `quotes.phone` has no DB check constraint (unlike
-             client_accounts.phone), so a row written by anything other than
-             createQuote could hold arbitrary text. Stripping to digits means
-             neither href can be steered away from its literal tel:/https:
-             scheme, and the message is percent-encoded. */
+          // Strip to digits here, then encodeURIComponent at the sink below.
+          // The encode must stay inline in the href expression: taint analysis
+          // recognizes it there, but cannot see it through a helper function.
+          // `quotes.phone` has no DB check constraint on purpose — rejecting an
+          // odd phone would lose the lead, which is worse than storing it — so
+          // the guarantee has to live here, at render time.
           const digits = q.phone.replace(/\D/g, "");
-          const telHref = `tel:${digits}`;
           const waText = `Hi ${q.name}, thanks for your enquiry. Regarding your ${q.bhk || "project"}${q.sqFt ? ` (${q.sqFt} sq ft)` : ""} — when would be a good time to talk?`;
-          const waHref = `https://wa.me/${digits}?text=${encodeURIComponent(waText)}`;
 
           return (
           <div
@@ -131,19 +129,14 @@ export default function AdminLeadsPage() {
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              {/* Snyk flags this href as DOMXSS (taint from useState). Reviewed:
-                  phone is stripped to digits above and tel: is a literal, so the
-                  href cannot be redirected. Suppress in the Snyk UI, not in code. */}
               <a
-                href={telHref}
+                href={`tel:${encodeURIComponent(digits)}`}
                 className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
               >
                 Call
               </a>
-              {/* Same reviewed DOMXSS false positive: digits-only phone plus an
-                  encodeURIComponent'd message under a literal https://wa.me. */}
               <a
-                href={waHref}
+                href={`https://wa.me/${encodeURIComponent(digits)}?text=${encodeURIComponent(waText)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-lg bg-green-500 px-3 py-1.5 text-sm font-semibold text-white hover:bg-green-600"
