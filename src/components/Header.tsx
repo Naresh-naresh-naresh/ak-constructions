@@ -17,12 +17,26 @@ export default function Header({ onGetQuote }: HeaderProps) {
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
         <div className="min-w-0">
-          <a href="#" className="block">
-            <span className="text-xl font-bold tracking-tight text-stone-900 lg:text-2xl">
-              {clientConfig.name}
-            </span>
-            <span className="block text-xs text-stone-500 lg:text-sm">
-              {clientConfig.tagline}
+          <a href="#" className="flex items-center gap-2.5 lg:gap-3">
+            {/* The client's logo file has a white background baked in (no alpha),
+                so mix-blend-multiply drops it out against the light header
+                instead of showing a white box over the blurred backdrop. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/ak-logo.webp"
+              alt=""
+              aria-hidden="true"
+              className="h-9 w-auto shrink-0 mix-blend-multiply lg:h-11"
+            />
+            <span className="min-w-0">
+              <span className="block truncate text-xl font-bold tracking-tight text-stone-900 lg:text-2xl">
+                {clientConfig.name}
+              </span>
+              {/* Hidden on the narrowest phones: with the logo alongside it,
+                  the tagline truncates mid-word and looks unfinished. */}
+              <span className="hidden truncate text-xs text-stone-500 sm:block lg:text-sm">
+                {clientConfig.tagline}
+              </span>
             </span>
           </a>
         </div>
