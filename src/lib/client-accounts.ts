@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { getSupabase } from "@/lib/supabase";
 import { normalizePhone } from "@/lib/utils";
@@ -24,10 +25,26 @@ const LOCKOUT_MINUTES = 15;
 const BCRYPT_COST = 10;
 
 /**
- * Compared against when no account exists, so the response time of "unknown
- * phone" matches "wrong password" instead of returning noticeably faster.
+ * A throwaway hash compared against when no account exists, so the response
+ * time of "unknown phone" matches "wrong password" rather than returning
+ * noticeably faster and revealing which numbers have accounts.
+ *
+ * Generated from random bytes rather than hardcoded — nothing can authenticate
+ * against it, and the only property that matters is that it's a *valid* bcrypt
+ * hash at the same cost factor, so bcrypt.compare does the full amount of work.
+ * (A malformed string would return false immediately and defeat the purpose.)
+ *
+ * Built lazily and cached: paying ~100ms once per process, only on the first
+ * unknown-phone attempt, is cheaper than doing it on every cold start.
  */
-const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8DkKUlPWCPMlDpZ8Xh9Bl0lJ7bYWmO";
+let dummyHash: string | null = null;
+
+async function getDummyHash(): Promise<string> {
+  if (!dummyHash) {
+    dummyHash = await bcrypt.hash(randomBytes(32).toString("hex"), BCRYPT_COST);
+  }
+  return dummyHash;
+}
 
 export const PASSWORD_MIN_LENGTH = 10;
 /** bcrypt silently ignores anything past 72 bytes, so reject rather than truncate. */
@@ -76,7 +93,7 @@ export async function verifyClientPassword(
 
   if (!data) {
     // Equalize timing with the wrong-password path.
-    await bcrypt.compare(password, DUMMY_HASH);
+    await bcrypt.compare(password, await getDummyHash());
     return { ok: false, reason: "invalid" };
   }
 

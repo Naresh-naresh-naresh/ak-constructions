@@ -1,0 +1,15 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  12c9317b-c0c7-46ce-adf9-5ba66c302d5d:
+    - '*':
+        reason: >-
+          Reviewed false positive: buildWhatsAppUrl percent-encodes both
+          arguments and hardcodes the https://wa.me scheme, so interpolated DB
+          values cannot alter the URL structure or inject a javascript: scheme.
+          Verified against javascript:, quote-breakout, and tag-injection
+          payloads.
+        expires: 2026-09-27T18:06:19.056Z
+        created: 2026-08-28T18:06:19.059Z
+patch: {}

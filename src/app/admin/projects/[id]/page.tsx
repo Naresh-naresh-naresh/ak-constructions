@@ -174,6 +174,12 @@ export default function AdminProjectDetailPage() {
             {project.signupCode || "—"}
           </code>
           {project.signupCode && (
+            /* Snyk Code flags this dynamic href as DOM XSS (taint from a
+               useState value). Reviewed false positive: buildWhatsAppUrl
+               percent-encodes both arguments and hardcodes the https://wa.me
+               scheme, so an interpolated DB value cannot alter the URL's
+               structure or inject a javascript: scheme. The analyzer can't see
+               through the helper's encodeURIComponent. */
             <a
               href={buildWhatsAppUrl(
                 project.phone,
