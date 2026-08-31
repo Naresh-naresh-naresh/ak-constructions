@@ -12,7 +12,7 @@ import Services from "@/components/Services";
 import Testimonials from "@/components/Testimonials";
 
 const POPUP_DISMISSED_KEY = "ak_popup_dismissed_at";
-const POPUP_DELAY_MS = 4000;
+const POPUP_DELAY_MS = 2000;
 const POPUP_SNOOZE_MS = 24 * 60 * 60 * 1000;
 
 export default function HomePage() {
