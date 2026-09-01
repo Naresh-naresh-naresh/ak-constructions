@@ -48,15 +48,21 @@ export default function Hero({ onGetQuote }: HeroProps) {
 
           <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-white/20 pt-8">
             <div>
-              <dt className="text-2xl font-bold text-orange-400">150+</dt>
+              <dt className="text-2xl font-bold text-orange-400">
+                {clientConfig.stats.projectsDelivered}
+              </dt>
               <dd className="mt-1 text-sm text-stone-300">Projects delivered</dd>
             </div>
             <div>
-              <dt className="text-2xl font-bold text-orange-400">10+</dt>
+              <dt className="text-2xl font-bold text-orange-400">
+                {clientConfig.stats.yearsExperience}
+              </dt>
               <dd className="mt-1 text-sm text-stone-300">Years experience</dd>
             </div>
             <div>
-              <dt className="text-2xl font-bold text-orange-400">4.9★</dt>
+              <dt className="text-2xl font-bold text-orange-400">
+                {clientConfig.stats.clientRating}
+              </dt>
               <dd className="mt-1 text-sm text-stone-300">Client rating</dd>
             </div>
           </dl>

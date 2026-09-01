@@ -11,6 +11,12 @@ export const clientConfig = {
   email: "nareshdev03@gmail.com",
   city: "Your City",
   serviceAreas: ["City Center", "North Zone", "South Zone", "East Zone"],
+  /** Hero trust stats. Keep these truthful — they are public claims. */
+  stats: {
+    projectsDelivered: "300+",
+    yearsExperience: "10+",
+    clientRating: "4.9★",
+  },
   social: {
     instagram: "https://instagram.com/akconstructions",
     facebook: "https://facebook.com/akconstructions",

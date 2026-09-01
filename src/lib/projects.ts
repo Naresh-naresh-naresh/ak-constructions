@@ -102,6 +102,7 @@ export async function createProject(
       label: stage.label,
       completed: false,
     })),
+    team: [],
     createdAt: now,
     updatedAt: now,
     signupCode: generateSignupCode(),
@@ -181,6 +182,7 @@ export async function updateProject(
   };
   if (patch.status !== undefined) changes.status = patch.status;
   if (patch.stages !== undefined) changes.stages = patch.stages;
+  if (patch.team !== undefined) changes.team = patch.team;
   if (patch.notes !== undefined) changes.notes = patch.notes;
 
   const { data, error } = await getSupabase()

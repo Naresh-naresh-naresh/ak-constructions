@@ -10,6 +10,7 @@ import HowItWorks from "@/components/HowItWorks";
 import QuoteModal from "@/components/QuoteModal";
 import Services from "@/components/Services";
 import Testimonials from "@/components/Testimonials";
+import TrackerBanner from "@/components/TrackerBanner";
 
 const POPUP_DISMISSED_KEY = "ak_popup_dismissed_at";
 const POPUP_DELAY_MS = 2000;
@@ -41,6 +42,7 @@ export default function HomePage() {
         <HeroGallery />
         <Services />
         <HowItWorks />
+        <TrackerBanner />
         <Testimonials />
       </main>
       <Footer />
