@@ -7,8 +7,10 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HeroGallery from "@/components/HeroGallery";
 import HowItWorks from "@/components/HowItWorks";
+import Packages from "@/components/Packages";
 import QuoteModal from "@/components/QuoteModal";
 import Services from "@/components/Services";
+import { packagesConfig } from "@/config/packages";
 import Testimonials from "@/components/Testimonials";
 import TrackerBanner from "@/components/TrackerBanner";
 
@@ -41,6 +43,7 @@ export default function HomePage() {
         <Hero onGetQuote={openQuote} />
         <HeroGallery />
         <Services />
+        {packagesConfig.enabled && <Packages onGetQuote={openQuote} />}
         <HowItWorks />
         <TrackerBanner />
         <Testimonials />

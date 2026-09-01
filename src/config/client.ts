@@ -1,3 +1,5 @@
+import { packagesConfig } from "@/config/packages";
+
 export const clientConfig = {
   name: "AK Constructions",
   tagline: "Interior Design & Home Construction",
@@ -26,10 +28,13 @@ export const clientConfig = {
 export const navLinks = [
   { label: "Our Work", href: "#gallery" },
   { label: "Services", href: "#services" },
+  // Gated on the same flag as the section itself, so enabling packages is a
+  // one-line change and a disabled section can never leave a dead anchor here.
+  ...(packagesConfig.enabled ? [{ label: "Packages", href: "#packages" }] : []),
   { label: "How It Works", href: "#how-it-works" },
   { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
-] as const;
+];
 
 export const bhkOptions = [
   { label: "2 BHK", sqFt: 900 },
