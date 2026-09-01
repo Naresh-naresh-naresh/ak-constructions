@@ -13,8 +13,17 @@ export const clientConfig = {
   /** Dialling code, no "+". Prefixed to the 10 local digits admins type in. */
   phoneCountryCode: "91",
   email: "nareshdev03@gmail.com",
-  city: "Your City",
-  serviceAreas: ["City Center", "North Zone", "South Zone", "East Zone"],
+  city: "Chennai",
+  region: "Tamil Nadu",
+  /**
+   * Areas AK demonstrably has projects in. This is a public coverage claim and
+   * it also drives the local-SEO keywords, so extend it only with areas Balaji
+   * confirms — a padded list that ranks for a suburb he won't travel to just
+   * produces calls he has to turn down.
+   */
+  serviceAreas: ["Adyar", "Guindy", "Anna Nagar", "Perungudi"],
+  /** Canonical origin. The apex 308-redirects here, so this must carry the www. */
+  siteUrl: "https://www.akconstructionandinteriors.com",
   /** Hero trust stats. Keep these truthful — they are public claims. */
   stats: {
     projectsDelivered: "300+",
