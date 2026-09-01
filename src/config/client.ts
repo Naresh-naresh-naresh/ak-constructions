@@ -10,6 +10,8 @@ export const clientConfig = {
   currencySymbol: "₹",
   phone: "+91 63834 34544",
   whatsapp: "916383434544",
+  /** Dialling code, no "+". Prefixed to the 10 local digits admins type in. */
+  phoneCountryCode: "91",
   email: "nareshdev03@gmail.com",
   city: "Your City",
   serviceAreas: ["City Center", "North Zone", "South Zone", "East Zone"],
