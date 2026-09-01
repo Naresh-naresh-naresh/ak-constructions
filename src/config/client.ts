@@ -1,3 +1,5 @@
+import { packagesConfig } from "@/config/packages";
+
 export const clientConfig = {
   name: "AK Constructions",
   tagline: "Interior Design & Home Construction",
@@ -8,9 +10,17 @@ export const clientConfig = {
   currencySymbol: "₹",
   phone: "+91 63834 34544",
   whatsapp: "916383434544",
+  /** Dialling code, no "+". Prefixed to the 10 local digits admins type in. */
+  phoneCountryCode: "91",
   email: "nareshdev03@gmail.com",
   city: "Your City",
   serviceAreas: ["City Center", "North Zone", "South Zone", "East Zone"],
+  /** Hero trust stats. Keep these truthful — they are public claims. */
+  stats: {
+    projectsDelivered: "300+",
+    yearsExperience: "10+",
+    clientRating: "4.9★",
+  },
   social: {
     instagram: "https://instagram.com/akconstructions",
     facebook: "https://facebook.com/akconstructions",
@@ -20,10 +30,13 @@ export const clientConfig = {
 export const navLinks = [
   { label: "Our Work", href: "#gallery" },
   { label: "Services", href: "#services" },
+  // Gated on the same flag as the section itself, so enabling packages is a
+  // one-line change and a disabled section can never leave a dead anchor here.
+  ...(packagesConfig.enabled ? [{ label: "Packages", href: "#packages" }] : []),
   { label: "How It Works", href: "#how-it-works" },
   { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
-] as const;
+];
 
 export const bhkOptions = [
   { label: "2 BHK", sqFt: 900 },

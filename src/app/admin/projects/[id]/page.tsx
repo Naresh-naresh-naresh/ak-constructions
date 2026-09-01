@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import StageChecklist from "@/components/StageChecklist";
 import StatusBadge from "@/components/StatusBadge";
+import TeamList from "@/components/TeamList";
 import { clientConfig } from "@/config/client";
 import { PROJECT_STATUS_LABELS } from "@/config/stages";
 import type { ProjectRecord, ProjectStatus } from "@/types/project";
@@ -16,6 +17,10 @@ export default function AdminProjectDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [newStageLabel, setNewStageLabel] = useState("");
+  const [newMemberName, setNewMemberName] = useState("");
+  const [newMemberRole, setNewMemberRole] = useState("");
+  const [newMemberPhone, setNewMemberPhone] = useState("");
+  const [teamError, setTeamError] = useState("");
   const [isResetting, setIsResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
 
@@ -123,6 +128,44 @@ export default function AdminProjectDetailPage() {
     const stages = project.stages.filter((stage) => stage.key !== key);
     setProject({ ...project, stages });
     save({ stages, status: project.status, notes: project.notes });
+  };
+
+  const addTeamMember = () => {
+    if (!project) return;
+    const name = newMemberName.trim();
+    const phone = newMemberPhone.replace(/\D/g, "");
+
+    if (!name) {
+      setTeamError("Enter the person's name.");
+      return;
+    }
+    if (phone.length !== 10) {
+      setTeamError("Enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    setTeamError("");
+    const team = [
+      ...(project.team ?? []),
+      {
+        key: crypto.randomUUID(),
+        name,
+        role: newMemberRole.trim() || undefined,
+        phone,
+      },
+    ];
+    setProject({ ...project, team });
+    setNewMemberName("");
+    setNewMemberRole("");
+    setNewMemberPhone("");
+    save({ stages: project.stages, status: project.status, notes: project.notes, team });
+  };
+
+  const deleteTeamMember = (key: string) => {
+    if (!project) return;
+    const team = (project.team ?? []).filter((m) => m.key !== key);
+    setProject({ ...project, team });
+    save({ stages: project.stages, status: project.status, notes: project.notes, team });
   };
 
   const changeStatus = (status: ProjectStatus) => {
@@ -257,6 +300,64 @@ export default function AdminProjectDetailPage() {
           >
             + Add Stage
           </button>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-sm font-semibold text-stone-800">Site team</p>
+        <p className="mt-1 text-xs text-stone-400">
+          The client sees these names and can call or WhatsApp them directly from
+          their dashboard.
+        </p>
+
+        <div className="mt-3">
+          <TeamList
+            team={project.team ?? []}
+            onDelete={deleteTeamMember}
+            emptyLabel="No one assigned yet. Add the site engineer below."
+          />
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              type="text"
+              placeholder="Name"
+              value={newMemberName}
+              onChange={(event) => setNewMemberName(event.target.value)}
+              className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+            />
+            <input
+              type="text"
+              placeholder="Role (e.g. Site Engineer)"
+              value={newMemberRole}
+              onChange={(event) => setNewMemberRole(event.target.value)}
+              className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+            />
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="tel"
+              placeholder="10-digit mobile"
+              value={newMemberPhone}
+              onChange={(event) => setNewMemberPhone(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addTeamMember();
+                }
+              }}
+              className="w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
+            />
+            <button
+              type="button"
+              onClick={addTeamMember}
+              className="shrink-0 rounded-xl border border-orange-500 px-4 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-50"
+            >
+              + Add Person
+            </button>
+          </div>
+          {teamError && <p className="text-sm text-red-600">{teamError}</p>}
         </div>
       </div>
 

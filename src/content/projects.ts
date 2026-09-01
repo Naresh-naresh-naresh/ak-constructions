@@ -88,28 +88,32 @@ export const galleryProjects: ProjectImage[] = [
   },
 ];
 
-/** Hero section — featured image plus the collage below it */
-export const heroImages = [
-  // NOTE: index 0 doubles as the large featured image in Hero.tsx, so keep the
-  // strongest landscape shot first — portrait photos crop badly there.
+/**
+ * Hero background carousel — 5 slides, auto-advancing.
+ *
+ * Landscape shots only: these render full-bleed with object-cover, so a
+ * portrait photo gets cropped to its middle third and reads as a mistake.
+ * Ordered to show range — living space, kitchen, bedroom, theatre, exterior.
+ */
+export const heroSlides = [
   {
     src: "/images/gallery/living-room.webp",
     alt: "Living room interior by AK Constructions",
-    className: "h-48",
   },
   {
     src: "/images/gallery/kitchen.webp",
     alt: "Modular kitchen by AK Constructions",
-    className: "h-36",
   },
   {
     src: "/images/gallery/bedroom.webp",
-    alt: "Bedroom with fitted wardrobes",
-    className: "h-36",
+    alt: "Bedroom with fitted wardrobes and designer ceiling",
   },
   {
     src: "/images/gallery/home-theatre.webp",
     alt: "Home theatre room with LED cove lighting",
-    className: "h-48",
+  },
+  {
+    src: "/images/gallery/home-exterior-1.webp",
+    alt: "Completed independent house by AK Constructions",
   },
 ];

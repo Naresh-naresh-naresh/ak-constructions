@@ -7,12 +7,15 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HeroGallery from "@/components/HeroGallery";
 import HowItWorks from "@/components/HowItWorks";
+import Packages from "@/components/Packages";
 import QuoteModal from "@/components/QuoteModal";
 import Services from "@/components/Services";
+import { packagesConfig } from "@/config/packages";
 import Testimonials from "@/components/Testimonials";
+import TrackerBanner from "@/components/TrackerBanner";
 
 const POPUP_DISMISSED_KEY = "ak_popup_dismissed_at";
-const POPUP_DELAY_MS = 4000;
+const POPUP_DELAY_MS = 2000;
 const POPUP_SNOOZE_MS = 24 * 60 * 60 * 1000;
 
 export default function HomePage() {
@@ -40,7 +43,9 @@ export default function HomePage() {
         <Hero onGetQuote={openQuote} />
         <HeroGallery />
         <Services />
+        {packagesConfig.enabled && <Packages onGetQuote={openQuote} />}
         <HowItWorks />
+        <TrackerBanner />
         <Testimonials />
       </main>
       <Footer />

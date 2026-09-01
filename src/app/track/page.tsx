@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import SignOutButton from "@/app/track/SignOutButton";
 import StageChecklist from "@/components/StageChecklist";
 import StatusBadge from "@/components/StatusBadge";
+import TeamList from "@/components/TeamList";
 import { clientConfig } from "@/config/client";
 import { requireClientPhone } from "@/lib/authz";
 import {
@@ -42,6 +43,7 @@ export default async function ClientDashboardPage() {
       startedOn: project.startedOn,
       status: project.status,
       stages: project.stages,
+      team: project.team ?? [],
       progressPercent: calculateProgressPercent(project.stages),
     }));
 
@@ -127,6 +129,20 @@ export default async function ClientDashboardPage() {
             <div className="mt-4">
               <StageChecklist stages={project.stages} />
             </div>
+
+            {project.team.length > 0 && (
+              <div className="mt-6 border-t border-stone-200 pt-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
+                  Your Site Team
+                </p>
+                <p className="mt-1 text-xs text-stone-400">
+                  Call or message them directly with any questions about your build.
+                </p>
+                <div className="mt-3">
+                  <TeamList team={project.team} />
+                </div>
+              </div>
+            )}
           </div>
         ))}
       </div>
