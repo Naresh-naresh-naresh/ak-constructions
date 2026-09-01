@@ -4,8 +4,12 @@
     {
       "name": "ak-constructions-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3005
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3005,
+      "autoPort": false
     }
   ]
 }
