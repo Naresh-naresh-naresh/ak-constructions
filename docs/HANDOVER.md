@@ -4,13 +4,17 @@ Everything needed to pick this project back up with no prior context, no chat
 history, and no particular AI assistant. If you are reading this after losing a
 laptop or an account, start here.
 
+For the wider question — which credentials to collect, who owns which account,
+and how to keep the client running if the maintainer is unreachable — see
+`docs/CONTINUITY.md`.
+
 ## Accounts that own the live system
 
 | Thing | Provider | What breaks without it |
 |---|---|---|
 | Code + history | GitHub `Naresh-naresh-naresh/ak-constructions` | everything |
 | Hosting, env vars, cron | Vercel, project `ak-constructions` (Hobby) | the live site |
-| Database | Supabase (Mumbai region) | leads, projects, client logins |
+| Database | Supabase (Mumbai region) | leads, projects, client logins — **the only single-copy asset**, see `scripts/export-database.mjs` |
 | Domain + DNS | Hostinger, `akconstructionandinteriors.com` | the domain |
 
 **Verify each of these is registered to a personal email, not a work one.** Git
