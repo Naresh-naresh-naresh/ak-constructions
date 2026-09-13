@@ -1,5 +1,5 @@
 export const clientConfig = {
-  name: "AK Constructions",
+  name: "AK Construction and Interiors",
   tagline: "Interior Design & Home Construction",
   description:
     "Complete interior solutions and home construction — from modular kitchens to full home builds.",

@@ -11,7 +11,7 @@ export default function HeroGallery() {
               Portfolio
             </p>
             <h2 className="mt-2 text-3xl font-bold text-stone-900 md:text-4xl">
-              Spaces we design & build
+              Our Completed Projects
             </h2>
           </div>
           <p className="max-w-md text-stone-600">

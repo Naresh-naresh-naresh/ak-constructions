@@ -42,25 +42,21 @@ export default function Header({ onGetQuote, showPackagesLink }: HeaderProps) {
               aria-hidden="true"
               className="h-9 w-auto shrink-0 mix-blend-multiply lg:h-11"
             />
-            <span className="min-w-0">
-              <span className="block truncate text-xl font-bold tracking-tight text-stone-900 lg:text-2xl">
-                {clientConfig.name}
-              </span>
-              {/* Hidden on the narrowest phones: with the logo alongside it,
-                  the tagline truncates mid-word and looks unfinished. */}
-              <span className="hidden truncate text-xs text-stone-500 sm:block lg:text-sm">
-                {clientConfig.tagline}
-              </span>
+            {/* One bold line, no tagline beneath: the full name is long enough
+                that the two stacked lines competed with each other, and the
+                tagline is already said in the hero. */}
+            <span className="min-w-0 truncate text-lg font-bold tracking-tight text-stone-900 sm:text-xl xl:whitespace-nowrap xl:text-lg 2xl:text-xl">
+              {clientConfig.name}
             </span>
           </a>
         </div>
 
-        <nav className="hidden items-center gap-6 xl:flex">
+        <nav className="hidden items-center gap-5 xl:flex 2xl:gap-6">
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="text-sm font-medium text-stone-700 transition hover:text-orange-600"
+              className="whitespace-nowrap text-sm font-medium text-stone-700 transition hover:text-orange-600"
             >
               {link.label}
             </a>
