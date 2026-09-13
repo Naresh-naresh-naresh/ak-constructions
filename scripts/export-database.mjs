@@ -19,7 +19,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { resolve, sep } from "node:path";
 
 // Every table the app writes to. Add to this list when a table is added, or the
 // backup silently stops being complete — which is the worst kind of backup.
@@ -39,10 +39,30 @@ if (!url || !key) {
 
 const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-const outDir = process.argv[2] ?? ".";
 const stamp = new Date().toISOString().slice(0, 10);
-const dir = join(outDir, `ak-db-backup-${stamp}`);
+
+// The output directory is operator-supplied, so resolve it to an absolute path
+// once and confine every write beneath it. Nothing here is reachable from a
+// request — this is a local CLI and the caller could write files directly
+// anyway — but the containment check keeps that true if the script is ever
+// wired into a cron or CI job where the path is not typed by a human.
+const dir = resolve(process.argv[2] ?? ".", `ak-db-backup-${stamp}`);
 mkdirSync(dir, { recursive: true });
+
+/**
+ * Write one file inside the backup directory.
+ *
+ * `name` is always a hardcoded table name or "manifest.json", and the prefix
+ * check is what makes that an enforced guarantee rather than an assumption a
+ * later edit could quietly break.
+ */
+function writeInsideBackup(name, contents) {
+  const target = resolve(dir, name);
+  if (target !== dir && !target.startsWith(dir + sep)) {
+    throw new Error(`Refusing to write outside the backup directory: ${name}`);
+  }
+  writeFileSync(target, contents);
+}
 
 let failed = false;
 const manifest = { exportedAt: new Date().toISOString(), tables: {} };
@@ -59,12 +79,12 @@ for (const table of TABLES) {
     continue;
   }
 
-  writeFileSync(join(dir, `${table}.json`), JSON.stringify(data, null, 2));
+  writeInsideBackup(`${table}.json`, JSON.stringify(data, null, 2));
   console.log(`  ${table.padEnd(16)} ${data.length} rows`);
   manifest.tables[table] = { rows: data.length };
 }
 
-writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest, null, 2));
+writeInsideBackup("manifest.json", JSON.stringify(manifest, null, 2));
 
 console.log(`\nWritten to ${dir}`);
 console.log("\nThis contains password hashes and customer phone numbers.");
