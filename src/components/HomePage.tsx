@@ -10,15 +10,20 @@ import HowItWorks from "@/components/HowItWorks";
 import Packages from "@/components/Packages";
 import QuoteModal from "@/components/QuoteModal";
 import Services from "@/components/Services";
-import { packagesConfig } from "@/config/packages";
 import Testimonials from "@/components/Testimonials";
+import type { PublicPackage } from "@/types/package";
 import TrackerBanner from "@/components/TrackerBanner";
 
 const POPUP_DISMISSED_KEY = "ak_popup_dismissed_at";
 const POPUP_DELAY_MS = 2000;
 const POPUP_SNOOZE_MS = 24 * 60 * 60 * 1000;
 
-export default function HomePage() {
+type HomePageProps = {
+  /** Published packages, loaded server-side in app/page.tsx. */
+  packages: PublicPackage[];
+};
+
+export default function HomePage({ packages }: HomePageProps) {
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
 
   const openQuote = () => setIsQuoteOpen(true);
@@ -38,12 +43,12 @@ export default function HomePage() {
 
   return (
     <>
-      <Header onGetQuote={openQuote} />
+      <Header onGetQuote={openQuote} showPackagesLink={packages.length > 0} />
       <main>
         <Hero onGetQuote={openQuote} />
         <HeroGallery />
         <Services />
-        {packagesConfig.enabled && <Packages onGetQuote={openQuote} />}
+        <Packages packages={packages} onGetQuote={openQuote} />
         <HowItWorks />
         <TrackerBanner />
         <Testimonials />

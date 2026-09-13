@@ -8,22 +8,27 @@ we can only publish AK's.
 ## How to turn it on
 
 1. Get the answers below from Balaji.
-2. Fill them into `src/config/packages.ts` — the labels there match this sheet
-   one-for-one, so it is a copy-paste job.
-3. Set `enabled: true` in the same file. That is the only switch: it reveals the
-   homepage section and adds "Packages" to the header nav together.
+2. Enter them in **/admin/packages** — no code, no deploy. Add a package, open
+   it, add each category, then add one item per line.
+3. Tick **Published** on the package. That is the switch: it reveals the homepage
+   section and adds "Packages" to the header nav together.
 
-Partial answers are fine to ship. Any row left blank is skipped, and a category
-with no answers at all disappears — so AK can launch with Structure and Flooring
-filled in and add the rest later, without the page looking broken.
+Build one package fully, then use **Copy categories from another package** in the
+editor and change only what differs between tiers. That turns three near-identical
+spec sheets into one sheet plus edits.
+
+Partial answers are fine. A package with no categories shows "Detailed
+specification available on request" rather than an empty card, and a package left
+as a draft is invisible to the public — so AK can fill in Structure and Flooring
+now and add the rest later without anything looking broken.
 
 ## Two things to settle first
 
-**1. Are there three packages, or one?**
-Right now AK quotes a single rate, ₹1,899/sq ft. The comparison layout needs
-three. Either Balaji sets two higher tiers with genuinely better materials, or we
-drop to a single-package layout — say which, because it changes the design, not
-just the numbers.
+**1. How many packages?**
+AK currently quotes a single rate, ₹1,899/sq ft. The layout adapts on its own —
+one package renders as a single card, two side by side, three in a row — so this
+is purely Balaji's commercial call, not a design constraint any more. If he wants
+tiers, the higher ones need genuinely better materials, not just a higher number.
 
 **2. Only commit to what AK will actually supply.**
 Every row is deletable. A shorter, honest list beats a long one AK has to argue

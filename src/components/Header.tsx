@@ -6,10 +6,24 @@ import { clientConfig, navLinks } from "@/config/client";
 
 type HeaderProps = {
   onGetQuote: () => void;
+  /**
+   * Whether to show the Packages anchor. Driven by whether any package is
+   * actually published, so the nav can never point at a section that isn't
+   * rendered.
+   */
+  showPackagesLink?: boolean;
 };
 
-export default function Header({ onGetQuote }: HeaderProps) {
+export default function Header({ onGetQuote, showPackagesLink }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const links = showPackagesLink
+    ? [
+        ...navLinks.slice(0, 2),
+        { label: "Packages", href: "#packages" },
+        ...navLinks.slice(2),
+      ]
+    : navLinks;
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -42,7 +56,7 @@ export default function Header({ onGetQuote }: HeaderProps) {
         </div>
 
         <nav className="hidden items-center gap-6 xl:flex">
-          {navLinks.map((link) => (
+          {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
@@ -88,7 +102,7 @@ export default function Header({ onGetQuote }: HeaderProps) {
       {isMenuOpen && (
         <nav className="border-t border-stone-200 bg-white px-4 py-4 xl:hidden">
           <ul className="flex flex-col gap-1">
-            {navLinks.map((link) => (
+            {links.map((link) => (
               <li key={link.label}>
                 <a
                   href={link.href}

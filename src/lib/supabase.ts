@@ -36,3 +36,4 @@ export function getSupabase(): SupabaseClient {
 }
 
 export const PROJECTS_TABLE = "projects";
+export const PACKAGES_TABLE = "packages";

@@ -117,9 +117,10 @@ Ordered by how much they matter.
    testimonials, and it is why `aggregateRating` was deliberately left out of the
    JSON-LD in `layout.tsx` — fake ratings in structured data are what Google's
    spam policy targets.
-5. **Packages section is built but switched off** (`packagesConfig.enabled`).
-   Waiting on real material specs from the client. See
-   `docs/PACKAGES-CHECKLIST.md`. Do not invent brands or concrete grades.
+5. **Packages are entered in `/admin/packages`**, not in code. Each package
+   stays a draft until Published is ticked. Nothing is seeded — the specs have
+   to come from AK. Do not invent brands or concrete grades; see
+   `docs/PACKAGES-CHECKLIST.md` for the sheet to collect them with.
 6. **Google Business Profile does not exist yet.** For a local builder this
    matters more than the website — the map pack ranks on proximity, reviews and
    category rather than domain authority.

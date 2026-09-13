@@ -22,6 +22,9 @@ export default function AdminTopBar() {
               <Link href="/admin/leads" className="text-stone-600 hover:text-orange-600">
                 Enquiries
               </Link>
+              <Link href="/admin/packages" className="text-stone-600 hover:text-orange-600">
+                Packages
+              </Link>
             </nav>
           )}
         </div>
