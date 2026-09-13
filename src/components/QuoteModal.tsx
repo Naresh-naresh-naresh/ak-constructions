@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import {
   bhkOptions,
   clientConfig,
+  rateByWorkType,
   timelineOptions,
   workTypes,
+  type WorkType,
 } from "@/config/client";
 import {
   buildWhatsAppUrl,
@@ -52,9 +54,15 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Rate follows the selected work type. null means AK has no published rate
+  // for that kind of work, in which case we offer a site visit rather than
+  // showing a number — previously every work type reused the combined rate, so
+  // an interior-only enquiry was quoted as though it included construction.
+  const rate = rateByWorkType[form.workType as WorkType] ?? null;
+
   const estimate = useMemo(
-    () => calculateQuoteEstimate(form.sqFt, clientConfig.ratePerSqFt),
-    [form.sqFt]
+    () => (rate === null ? 0 : calculateQuoteEstimate(form.sqFt, rate)),
+    [form.sqFt, rate]
   );
 
   useEffect(() => {
@@ -117,7 +125,16 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
     }
   };
 
-  const whatsappMessage = `Hi ${clientConfig.name}, I'm interested in a quote.\nBHK: ${form.bhk}\nArea: ${form.sqFt} sq ft\nEstimate: ${formatIndianCurrency(estimate)}\nName: ${form.name}\nPhone: ${form.phone}`;
+  // Work type included so AK knows what was asked for; the estimate line is
+  // dropped when there is no published rate rather than sending "₹0".
+  const whatsappMessage =
+    `Hi ${clientConfig.name}, I'm interested in a quote.\n` +
+    `Work: ${form.workType}\n` +
+    `BHK: ${form.bhk}\n` +
+    `Area: ${form.sqFt} sq ft\n` +
+    (estimate > 0 ? `Estimate: ${formatIndianCurrency(estimate)}\n` : "") +
+    `Name: ${form.name}\n` +
+    `Phone: ${form.phone}`;
 
   return (
     <div
@@ -155,9 +172,11 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
               Your quote request has been received. Our team will contact you
               within 24 hours with a detailed estimate.
             </p>
-            <p className="mt-4 text-lg font-semibold text-orange-600">
-              Indicative estimate: {formatIndianCurrency(estimate)}
-            </p>
+            {estimate > 0 && (
+              <p className="mt-4 text-lg font-semibold text-orange-600">
+                Indicative estimate: {formatIndianCurrency(estimate)}
+              </p>
+            )}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <a
                 href={buildWhatsAppUrl(clientConfig.whatsapp, whatsappMessage)}
@@ -198,21 +217,35 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
 
               <div className="mt-8 rounded-2xl bg-white/10 p-6 backdrop-blur">
                 <p className="text-sm text-stone-300">Live estimate</p>
-                <p className="mt-2 text-4xl font-bold">
-                  {estimate > 0
-                    ? formatIndianCurrency(estimate)
-                    : "—"}
-                </p>
-                {form.sqFt > 0 && (
-                  <p className="mt-2 text-sm text-stone-300">
-                    {form.sqFt.toLocaleString("en-IN")} sq ft ×{" "}
-                    {formatIndianCurrency(clientConfig.ratePerSqFt)}
-                  </p>
+
+                {rate === null ? (
+                  <>
+                    <p className="mt-2 text-2xl font-bold leading-snug">
+                      Quoted after a site visit
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed text-stone-300">
+                      {form.workType} is priced on scope rather than a flat
+                      rate. Send your details and we&apos;ll come back with a
+                      figure.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-2 text-4xl font-bold">
+                      {estimate > 0 ? formatIndianCurrency(estimate) : "—"}
+                    </p>
+                    {form.sqFt > 0 && (
+                      <p className="mt-2 text-sm text-stone-300">
+                        {form.sqFt.toLocaleString("en-IN")} sq ft ×{" "}
+                        {formatIndianCurrency(rate)}
+                      </p>
+                    )}
+                    <p className="mt-4 text-xs leading-relaxed text-stone-400">
+                      Indicative pricing only. Final quote depends on materials,
+                      design scope, and site visit.
+                    </p>
+                  </>
                 )}
-                <p className="mt-4 text-xs leading-relaxed text-stone-400">
-                  Indicative pricing only. Final quote depends on materials,
-                  design scope, and site visit.
-                </p>
               </div>
             </div>
 
@@ -337,11 +370,18 @@ export default function QuoteModal({ isOpen, onClose }: QuoteModalProps) {
 
               <div className="mt-4 rounded-xl bg-orange-50 p-4 md:hidden">
                 <p className="text-sm text-stone-600">Indicative estimate</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {estimate > 0
-                    ? formatIndianCurrency(estimate)
-                    : "Enter sq ft to calculate"}
-                </p>
+                {rate === null ? (
+                  <p className="text-base font-semibold leading-snug text-orange-600">
+                    Quoted after a site visit — send your details and we&apos;ll
+                    come back with a figure.
+                  </p>
+                ) : (
+                  <p className="text-2xl font-bold text-orange-600">
+                    {estimate > 0
+                      ? formatIndianCurrency(estimate)
+                      : "Enter sq ft to calculate"}
+                  </p>
+                )}
               </div>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
